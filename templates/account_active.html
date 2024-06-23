@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Active</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <section class="w-full h-screen bg-[#CACACA] flex justify-center items-center">
+      <section class="border rounded-lg bg-[#FFFFFF] w-[55%] h-[60%] flex flex-col justify-center items-center relative">
+        <img src="{{ url_for('static', filename='image/ez-link.png') }}" alt="EZ-Link" class="w-[25%] h-auto mb-5 border rounded-lg" />
+        <h1 class="font-bold text-center">Thank You {{ username }}. Your Account Is Active</h1>
+        <a class="btn btn-primary mt-5" href="{{ url }}">Back To Login</a>
+      </section>
+    </section>
+  </body>
+</html>
