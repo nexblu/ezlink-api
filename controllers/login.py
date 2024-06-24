@@ -1,7 +1,7 @@
 from utils import UserNotFound, Validator
-from config import ACCESS_TOKEN_KEY, ALGORITHMS, REFRESH_TOKEN_KEY, API_URL
-import jwt
-import datetime
+from config import API_URL
+from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import JWTManager
 from database import UserCRUD
 from flask_bcrypt import Bcrypt
 from flask import jsonify, url_for
@@ -11,6 +11,7 @@ class LoginController:
     def __init__(self) -> None:
         self.user_database = UserCRUD()
         self.bcrypt = Bcrypt()
+        self.jwt = JWTManager()
 
     async def login(self, email, password):
         if errors := await Validator.validate_login(email, password):
@@ -48,7 +49,7 @@ class LoginController:
                         {
                             "success": False,
                             "status_code": 400,
-                            "message": 'user is active',
+                            "message": 'user is not active',
                             "data": {
                                 "email": email,
                                 "username": user.username,
@@ -71,47 +72,16 @@ class LoginController:
                 )
             try:
                 if self.bcrypt.check_password_hash(user.password, password):
-                    access_token = jwt.encode(
-                        {
-                            "user_id": user.id,
-                            "username": user.username,
-                            "email": user.email,
-                            "is_active": user.is_active,
-                            "is_admin": user.is_admin,
-                            "profile_token": f"",
-                            "exp": datetime.datetime.now(
-                                datetime.timezone.utc
-                            ).timestamp()
-                            + datetime.timedelta(minutes=5).total_seconds(),
-                            "profile_image": f'{API_URL}{url_for(
-                                "api user.get_avatar",
-                                user_id=user.id,
-                                profile_name=user.profile_name,
-                            )}',
-                        },
-                        ACCESS_TOKEN_KEY,
-                        algorithm=ALGORITHMS,
-                    )
-                    refresh_token = jwt.encode(
-                        {
-                            "user_id": user.id,
-                            "username": user.username,
-                            "email": user.email,
-                            "is_active": user.is_active,
-                            "is_admin": user.is_admin,
-                            "exp": datetime.datetime.now(
-                                datetime.timezone.utc
-                            ).timestamp()
-                            + datetime.timedelta(days=25).total_seconds(),
-                            "profile_image": f'{API_URL}{url_for(
-                                "api user.get_avatar",
-                                user_id=user.id,
-                                profile_name=user.profile_name,
-                            )}',
-                        },
-                        REFRESH_TOKEN_KEY,
-                        algorithm=ALGORITHMS,
-                    )
+                    access_token = create_access_token(identity=user.id, additional_claims={"username": user.username, "profile_image": f'{API_URL}{url_for(
+                                    "api user.get_avatar",
+                                    user_id=user.id,
+                                    profile_name=user.profile_name,
+                                )}'})
+                    refresh_token = create_refresh_token(identity=user.id, additional_claims={"username": user.username, "profile_image": f'{API_URL}{url_for(
+                                    "api user.get_avatar",
+                                    user_id=user.id,
+                                    profile_name=user.profile_name,
+                                )}'})
                     return (
                         jsonify(
                             {

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from config import MONGODB_URL, SECRET_KEY, POSTGRESQL_URL
 from database import db_session
@@ -6,6 +6,8 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from datetime import timedelta
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils import (
     handle_404,
     handle_415,
@@ -24,9 +26,12 @@ from api.discord_oauth import discord_oauth_router
 from api.email import email_router
 from api.user import user_router
 from api.reset_password import reset_router
+from api.short_url import short_url_router
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = POSTGRESQL_URL
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 CORS(app, supports_credentials=True)
 limiter = Limiter(
     get_remote_address, app=app, default_limits=[""], storage_uri=MONGODB_URL
@@ -34,6 +39,7 @@ limiter = Limiter(
 app.secret_key = SECRET_KEY
 google_oauth_controller.google_oauth.init_app(app)
 login_controller.bcrypt.init_app(app)
+login_controller.jwt.init_app(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -65,6 +71,7 @@ app.register_blueprint(discord_oauth_router)
 app.register_blueprint(email_router)
 app.register_blueprint(user_router)
 app.register_blueprint(reset_router)
+app.register_blueprint(short_url_router)
 
 app.register_error_handler(429, handle_429)
 app.register_error_handler(404, handle_404)
@@ -73,3 +80,11 @@ app.register_error_handler(400, handle_400)
 app.register_error_handler(401, handle_401)
 app.register_error_handler(403, handle_403)
 app.register_error_handler(405, handle_405)
+
+
+@app.route("/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    # Access the identity of the current user with get_jwt_identity
+    current_user = get_jwt_identity()
+    return jsonify(logged_in_as=current_user), 200
