@@ -71,6 +71,7 @@ app.register_blueprint(discord_oauth_router)
 app.register_blueprint(email_router)
 app.register_blueprint(user_router)
 app.register_blueprint(reset_router)
+app.register_blueprint(short_url_router)
 
 app.register_error_handler(429, handle_429)
 app.register_error_handler(404, handle_404)
