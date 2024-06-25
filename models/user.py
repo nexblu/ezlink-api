@@ -52,7 +52,9 @@ class UserDatabase(Base):
     reset_password = relationship(
         "ResetPasswordDatabase", back_populates="user", uselist=False
     )
-    short_url = relationship("ShortURLDatabase", back_populates="user", uselist=False)
+    reset_password = relationship(
+        "ShortURLDatabase", back_populates="user", uselist=False
+    )
 
     def __init__(self, username, email, password, created_at, updated_at):
         self.username = username
@@ -60,7 +62,7 @@ class UserDatabase(Base):
         self.password = Validator.check_password_strength(password)
         self.created_at = created_at
         self.updated_at = updated_at
-        self.profile_name = f"{datetime.datetime.now(datetime.timezone.utc).timestamp()}_{self.username}"
+        self.profile_name = f"{self.created_at}_{self.username}"
         self.profile_image = self.image_to_large_binary()
 
     def __repr__(self):

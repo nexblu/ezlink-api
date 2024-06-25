@@ -1,13 +1,13 @@
 from flask import Blueprint, request
 from controllers import ShortURLController
-from utils import token_required
+from flask_jwt_extended import jwt_required
 
 short_url_router = Blueprint("api user short url", __name__)
 short_url_controller = ShortURLController()
 
 
 @short_url_router.post("/ez-link/v1/short-url")
-@token_required()
+@jwt_required()
 async def add_short_url():
     user = request.user
     data = request.json
@@ -17,7 +17,7 @@ async def add_short_url():
 
 
 @short_url_router.get("/ez-link/v1/short-url")
-@token_required()
+@jwt_required()
 async def get_short_url():
     user = request.user
     return await short_url_controller.get_short_url(user)

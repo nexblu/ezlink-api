@@ -27,6 +27,7 @@ class ShortURLNotAvaible(Exception):
         self.message = message
         super().__init__(self.message)
 
+
 class EmailAlreadySend(Exception):
     def __init__(self, message="email already active"):
         self.message = message
