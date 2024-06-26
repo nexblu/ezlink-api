@@ -13,7 +13,6 @@ import qrcode
 import io
 import validators
 from utils import ShortURLNotAvaible
-import uuid
 
 
 class ShortURLDatabase(Base):
@@ -27,8 +26,7 @@ class ShortURLDatabase(Base):
     )
     url = Column(String, unique=True, nullable=False)
     aliases = Column(String, unique=True, nullable=True)
-    uuid = Column(String, unique=True, nullable=False)
-    name_file = Column(String, unique=True, nullable=False)
+    name_file = Column(String, nullable=False)
     qr_code = Column(LargeBinary, nullable=False)
     created_at = Column(Float, nullable=False)
     updated_at = Column(Float, nullable=False)
@@ -39,7 +37,6 @@ class ShortURLDatabase(Base):
         CheckConstraint("user_id > 0", name="positive_user_id"),
         CheckConstraint("length(url) > 0", name="non_empty_url"),
         CheckConstraint("length(aliases) > 0", name="non_empty_aliases"),
-        CheckConstraint("length(uuid) > 0", name="non_empty_uuid"),
         CheckConstraint("created_at > 0", name="positive_created_at"),
         CheckConstraint("updated_at > 0", name="positive_updated_at"),
     )
@@ -47,10 +44,9 @@ class ShortURLDatabase(Base):
     def __init__(self, user_id, url, created_at, updated_at):
         self.user_id = user_id
         self.url = url
-        self.uuid = uuid.uuid4()
         self.created_at = created_at
         self.updated_at = updated_at
-        self.name_file = f"{uuid.uuid4()}_{user_id}"
+        self.name_file = f"{created_at}_{user_id}"
         self.qr_code = self.generate_qr_code()
 
     def __repr__(self):

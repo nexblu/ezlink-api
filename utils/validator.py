@@ -1,5 +1,5 @@
 import re
-from .custom_exception import PasswordNotSecure, EmailNotValid
+from .custom_exception import EmailNotValid
 from email_validator import validate_email, EmailNotValidError
 
 
@@ -16,7 +16,8 @@ class Validator:
         if not confirm_password or confirm_password.isspace():
             errors["confirm_password"] = "confirm password is empty"
         if password != confirm_password:
-            errors["password_match"] = "password and confirm password are not the same"
+            errors["password"] = "password are not the same"
+            errors["confirm_password"] = "password are not the same"
         return errors
 
     @staticmethod
@@ -45,15 +46,15 @@ class Validator:
     @staticmethod
     def check_password_strength(password):
         if len(password) < 8:
-            raise PasswordNotSecure
+            return False
         if not re.search(r"\d", password):
-            raise PasswordNotSecure
+            return False
         if not re.search(r"[A-Z]", password):
-            raise PasswordNotSecure
+            return False
         if not re.search(r"[a-z]", password):
-            raise PasswordNotSecure
+            return False
         if not re.search(r"[!@#$%^&*()-+=]", password):
-            raise PasswordNotSecure
+            return False
         return password
 
     @staticmethod

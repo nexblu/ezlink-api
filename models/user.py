@@ -11,7 +11,6 @@ from database import Base
 from sqlalchemy.orm import relationship
 from PIL import Image
 import io
-import datetime
 from utils import Validator
 
 
@@ -52,9 +51,7 @@ class UserDatabase(Base):
     reset_password = relationship(
         "ResetPasswordDatabase", back_populates="user", uselist=False
     )
-    reset_password = relationship(
-        "ShortURLDatabase", back_populates="user", uselist=False
-    )
+    short_url = relationship("ShortURLDatabase", back_populates="user", uselist=False)
 
     def __init__(self, username, email, password, created_at, updated_at):
         self.username = username

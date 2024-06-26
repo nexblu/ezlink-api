@@ -12,8 +12,8 @@ from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
     get_jwt_identity,
+    JWTManager,
 )
-from flask_jwt_extended import JWTManager
 from database import UserCRUD, AccountActiveCRUD, ResetPasswordCRUD
 from flask_bcrypt import Bcrypt
 from flask import jsonify, url_for, request, redirect, render_template
@@ -529,6 +529,7 @@ class AuthController:
                 400,
             )
         try:
+            email = Validator.validate_email(email)
             user = await self.user_database.get("email", email=email)
         except UserNotFound:
             return (
@@ -542,6 +543,19 @@ class AuthController:
                     }
                 ),
                 404,
+            )
+        except EmailNotValid:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "status_code": 400,
+                        "message": "email not valid",
+                        "data": {"email": email, "password": password},
+                        "errors": {"email": "email not valid"},
+                    }
+                ),
+                400,
             )
         else:
             if not user.is_active:
